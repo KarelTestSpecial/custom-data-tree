@@ -69,7 +69,7 @@ body {
     display: none;
 }
 
-.toggle-btn {
+.accordion-toggle-btn {
     font-size: 20px;
     cursor: pointer;
     user-select: none;
@@ -77,4 +77,23 @@ body {
 
 .nested-accordion {
     padding-left: 20px;
+}
+
+.content-area {
+    display: flex;
+    align-items: flex-start;
+}
+
+.content-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px;
+    margin-right: 5px;
+    line-height: 1;
+}
+
+.content-area p {
+    margin: 0;
 }
