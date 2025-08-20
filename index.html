@@ -8,11 +8,20 @@
 </head>
 <body>
 
-    <div id="accordion-container">
-        <!-- Accordeon items worden hier dynamisch toegevoegd -->
-    </div>
+    <div id="app-container">
+        <div id="controls-container">
+            <h2>Acties</h2>
+            <button id="add-root-node-btn">Voeg Hoofd Node Toe</button>
+            <hr>
+            <button id="add-child-btn" disabled>Voeg Kind Toe</button>
+            <button id="edit-title-btn" disabled>Bewerk Titel</button>
+            <button id="delete-node-btn" disabled>Verwijder Node</button>
+        </div>
 
-    <button id="add-node-btn">Voeg Hoofd Node Toe</button>
+        <div id="accordion-container">
+            <!-- Accordeon items worden hier dynamisch toegevoegd -->
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

@@ -1,16 +1,54 @@
 body {
     font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#app-container {
+    display: flex;
+    height: 100vh;
+}
+
+#controls-container {
+    width: 250px;
     padding: 20px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+}
+
+#controls-container h2 {
+    margin-top: 0;
+}
+
+#controls-container button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    cursor: pointer;
+}
+
+#controls-container button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 #accordion-container {
-    max-width: 600px;
-    margin: 0 auto;
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto; /* Make accordion scrollable if it gets too long */
 }
 
 .accordion-item {
     border: 1px solid #ccc;
     margin-bottom: 5px;
+}
+
+.accordion-item.selected {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
 .accordion-title {
@@ -26,14 +64,10 @@ body {
     padding: 0 10px;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    transition: max-height 0.3s ease-out;
 }
 
-.accordion-content.active {
-    padding: 10px;
-    max-height: 500px; /* Adjust as needed */
-    transition: max-height 0.5s ease-in, padding 0.5s ease-in;
-}
+/* We will set max-height dynamically via JS, so no .active class with fixed height needed */
 
 .toggle-btn {
     font-size: 20px;
@@ -48,14 +82,4 @@ body {
 .content-area {
     padding: 10px;
     border-top: 1px solid #eee;
-}
-
-#add-node-btn {
-    margin-top: 20px;
-    padding: 10px 15px;
-    cursor: pointer;
-}
-
-.actions {
-    padding: 5px;
 }
