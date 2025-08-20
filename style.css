@@ -88,10 +88,15 @@ body {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 16px;
     padding: 4px;
     margin-right: 5px;
     line-height: 1;
+    transition: transform 0.2s ease-in-out;
+}
+
+.content-toggle-btn.open {
+    transform: rotate(90deg);
 }
 
 .content-area p {

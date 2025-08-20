@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addRootNodeBtn = document.getElementById('add-root-node-btn');
     const addChildBtn = document.getElementById('add-child-btn');
     const editTitleBtn = document.getElementById('edit-title-btn');
+    const editContentBtn = document.getElementById('edit-content-btn');
     const deleteNodeBtn = document.getElementById('delete-node-btn');
 
     // --- STATE MANAGEMENT ---
@@ -24,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedState = localStorage.getItem('accordionState');
         if (savedState) {
             const parsedState = JSON.parse(savedState);
-            // Ensure contentVisible exists on loaded nodes for backward compatibility
             if (parsedState.nodes) {
                 fixMissingStateProperties(parsedState.nodes);
             }
@@ -35,12 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function fixMissingStateProperties(nodes) {
         nodes.forEach(node => {
-            if (node.contentVisible === undefined) {
-                node.contentVisible = false;
-            }
-            if (node.children) {
-                fixMissingStateProperties(node.children);
-            }
+            if (node.contentVisible === undefined) node.contentVisible = false;
+            if (node.content === undefined) node.content = `Inhoud van ${node.title}.`;
+            if (node.children) fixMissingStateProperties(node.children);
         });
     }
 
@@ -68,22 +65,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'accordion-content';
-        if (!isAccordionOpen) {
-            contentDiv.classList.add('hidden');
-        }
+        if (!isAccordionOpen) contentDiv.classList.add('hidden');
 
         const contentArea = document.createElement('div');
         contentArea.className = 'content-area';
 
         const contentParagraph = document.createElement('p');
-        contentParagraph.textContent = `Inhoud van ${node.title}.`;
-        if (!isContentVisible) {
-            contentParagraph.classList.add('hidden');
-        }
+        contentParagraph.textContent = node.content; // Use content from state
+        if (!isContentVisible) contentParagraph.classList.add('hidden');
 
         const contentToggleBtn = document.createElement('button');
         contentToggleBtn.className = 'content-toggle-btn';
-        contentToggleBtn.innerHTML = isContentVisible ? '&#9660;' : '&#9654;'; // Down arrow or Right arrow
+        contentToggleBtn.textContent = '>';
+        if (isContentVisible) contentToggleBtn.classList.add('open');
 
         contentArea.appendChild(contentToggleBtn);
         contentArea.appendChild(contentParagraph);
@@ -110,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isNodeSelected = state.selectedNodeId !== null;
         addChildBtn.disabled = !isNodeSelected;
         editTitleBtn.disabled = !isNodeSelected;
+        editContentBtn.disabled = !isNodeSelected; // Update new button
         deleteNodeBtn.disabled = !isNodeSelected;
     }
 
@@ -136,7 +131,14 @@ document.addEventListener('DOMContentLoaded', () => {
     addRootNodeBtn.addEventListener('click', () => {
         const title = prompt("Voer de titel voor de nieuwe hoofd node in:", `Node ${state.nextId}`);
         if (title) {
-            state.nodes.push({ id: state.nextId++, title: title, children: [], contentVisible: false });
+            const newNode = {
+                id: state.nextId++,
+                title: title,
+                children: [],
+                contentVisible: false,
+                content: `Inhoud van ${title}.` // Default content
+            };
+            state.nodes.push(newNode);
             saveState();
             render();
         }
@@ -149,7 +151,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const parentNode = findNodeById(state.nodes, state.selectedNodeId);
             if (parentNode) {
                 if (!parentNode.children) parentNode.children = [];
-                parentNode.children.push({ id: state.nextId++, title: title, children: [], contentVisible: false });
+                const newNode = {
+                    id: state.nextId++,
+                    title: title,
+                    children: [],
+                    contentVisible: false,
+                    content: `Inhoud van ${title}.`
+                };
+                parentNode.children.push(newNode);
                 state.openNodes.add(parentNode.id);
                 saveState();
                 render();
@@ -164,6 +173,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const newTitle = prompt("Voer de nieuwe titel in:", node.title);
             if (newTitle && newTitle.trim()) {
                 node.title = newTitle.trim();
+                saveState();
+                render();
+            }
+        }
+    });
+
+    editContentBtn.addEventListener('click', () => {
+        if (state.selectedNodeId === null) return;
+        const node = findNodeById(state.nodes, state.selectedNodeId);
+        if (node) {
+            const newContent = prompt("Voer de nieuwe inhoud in:", node.content);
+            if (newContent !== null) { // Allow empty content
+                node.content = newContent;
                 saveState();
                 render();
             }
@@ -188,14 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = parseInt(itemElement.dataset.id, 10);
         state.selectedNodeId = id;
 
-        // Handle content visibility toggle
         if (e.target.closest('.content-toggle-btn')) {
             const node = findNodeById(state.nodes, id);
-            if (node) {
-                node.contentVisible = !node.contentVisible;
-            }
+            if (node) node.contentVisible = !node.contentVisible;
         }
-        // Handle accordion open/close toggle
         else if (e.target.closest('.accordion-title')) {
             if (state.openNodes.has(id)) {
                 state.openNodes.delete(id);
