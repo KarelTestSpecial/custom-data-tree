@@ -29,31 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- DOM RENDERING & SYNCING ---
+    // --- DOM RENDERING ---
     function render() {
         accordionContainer.innerHTML = '';
         state.nodes.forEach(node => {
             accordionContainer.appendChild(createNodeElement(node));
         });
         updateActionButtons();
-        // Use a slightly longer timeout to give the browser time to paint before calculating height.
-        setTimeout(updateAllHeights, 100);
-    }
-
-    function updateAllHeights() {
-        const contentElements = document.querySelectorAll('.accordion-content');
-
-        const reversedElements = Array.from(contentElements).reverse();
-        reversedElements.forEach(content => {
-            const parentItem = content.parentElement;
-            if (!parentItem) return;
-            const id = parseInt(parentItem.dataset.id, 10);
-            if (state.openNodes.has(id)) {
-                content.style.maxHeight = content.scrollHeight + 'px';
-            } else {
-                content.style.maxHeight = '0px';
-            }
-        });
     }
 
     function createNodeElement(node) {
@@ -70,6 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const contentDiv = document.createElement('div');
         contentDiv.className = 'accordion-content';
+        // **THE FIX IS HERE**: Use a simple class to hide/show content.
+        if (!isOpen) {
+            contentDiv.classList.add('hidden');
+        }
 
         const contentArea = document.createElement('div');
         contentArea.className = 'content-area';

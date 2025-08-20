@@ -38,7 +38,7 @@ body {
 #accordion-container {
     flex-grow: 1;
     padding: 20px;
-    overflow-y: auto; /* Make accordion scrollable if it gets too long */
+    overflow-y: auto;
 }
 
 .accordion-item {
@@ -61,25 +61,20 @@ body {
 }
 
 .accordion-content {
-    padding: 0 10px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    padding: 10px; /* Keep padding for when it's visible */
+    border-top: 1px solid #eee;
 }
 
-/* We will set max-height dynamically via JS, so no .active class with fixed height needed */
+.hidden {
+    display: none;
+}
 
 .toggle-btn {
     font-size: 20px;
     cursor: pointer;
-    user-select: none; /* Prevent text selection */
+    user-select: none;
 }
 
 .nested-accordion {
     padding-left: 20px;
-}
-
-.content-area {
-    padding: 10px;
-    border-top: 1px solid #eee;
 }
