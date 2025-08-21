@@ -186,6 +186,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
+    function findNodeAndPathById(nodes, id, path = []) {
+        for (const node of nodes) {
+            const newPath = [...path, node];
+            if (node.id === id) {
+                return { node: node, path: newPath };
+            }
+            if (node.children) {
+                const found = findNodeAndPathById(node.children, id, newPath);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
     function deleteNodeRecursive(nodes, id) {
         return nodes.filter(node => {
             if (node.id === id) return false;
@@ -351,11 +367,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = parseInt(itemElement.dataset.id, 10);
         state.selectedNodeId = id;
 
-        if (e.target.closest('.content-toggle-btn')) {
+        // Handle different click targets within the accordion item
+        if (e.target.matches('.title-text')) {
+            // New feature: Click title to Google search the breadcrumb trail
+            const result = findNodeAndPathById(state.nodes, id);
+            if (result) {
+                const searchQuery = result.path.map(n => n.title).join(' ');
+                const url = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+                window.open(url, '_blank');
+            }
+            // A render is still needed to show the new selection
+        } else if (e.target.closest('.content-toggle-btn')) {
+            // Toggle visibility of the content paragraph
             const node = findNodeById(state.nodes, id);
             if (node) node.contentVisible = !node.contentVisible;
-        }
-        else if (e.target.closest('.accordion-title')) {
+        } else if (e.target.closest('.accordion-title')) {
+            // Toggle the accordion open/closed (for children)
             if (state.openNodes.has(id)) {
                 state.openNodes.delete(id);
             } else {

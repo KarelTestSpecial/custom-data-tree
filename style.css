@@ -76,6 +76,11 @@ body {
 
 .title-text {
     flex-grow: 1; /* Allow the title to take up remaining space */
+    cursor: pointer;
+}
+
+.title-text:hover {
+    text-decoration: underline;
 }
 
 .accordion-content {
