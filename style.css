@@ -106,7 +106,7 @@ body {
 .content-area {
     display: flex;
     align-items: flex-start;
-    padding-bottom: 10px;
+    padding: 10px;
 }
 
 .content-toggle-btn {
