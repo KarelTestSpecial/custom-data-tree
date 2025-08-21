@@ -84,7 +84,7 @@ body {
 }
 
 .accordion-content {
-    padding: 10px; /* Keep padding for when it's visible */
+    padding: 10px 10px 20px 10px; /* Increased bottom padding */
     border-top: 1px solid #eee;
 }
 
