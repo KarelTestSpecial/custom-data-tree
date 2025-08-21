@@ -122,6 +122,18 @@ body {
     transform: rotate(90deg);
 }
 
+.accordion-title.no-children {
+    cursor: default;
+}
+
+/* Style for the placeholder to match the content-toggle-btn's space */
+.button-placeholder {
+    display: inline-block;
+    width: 25px; /* Approximate width of the button */
+    height: 25px; /* Approximate height of the button */
+    margin-right: 5px;
+}
+
 .content-area p {
     margin: 0;
 }
