@@ -18,6 +18,10 @@ body {
     flex-direction: column;
 }
 
+.action-group-bottom {
+    margin-top: auto;
+}
+
 #controls-container h2 {
     margin-top: 0;
 }
@@ -33,6 +37,7 @@ body {
     border-radius: 4px;
     display: inline-block;
     box-sizing: border-box;
+    font-size: 14px; /* Consistent font size */
 }
 
 #controls-container button:hover, .button-label:hover {
