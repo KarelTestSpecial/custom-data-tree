@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasChildren = node.children && node.children.length > 0;
         const hasContent = node.content && node.content.trim() !== '';
         const isAccordionOpen = state.openNodes.has(node.id);
-        alert(`DEBUG: Rendering node "${node.title}" (ID: ${node.id}). IsOpen: ${isAccordionOpen}, HasChildren: ${hasChildren}`);
         const isContentVisible = node.contentVisible === true;
 
         const item = document.createElement('div');
@@ -68,17 +67,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Build Title Div ---
         const titleDiv = document.createElement('div');
         titleDiv.className = 'accordion-title';
-
-        const placeholder = document.createElement('span');
-        placeholder.className = 'button-placeholder';
-        titleDiv.appendChild(placeholder);
+        if (!hasChildren) {
+            titleDiv.classList.add('no-children');
+        }
 
         if (hasContent) {
             const contentToggleBtn = document.createElement('button');
             contentToggleBtn.className = 'content-toggle-btn';
             contentToggleBtn.textContent = '>';
             if (isContentVisible) contentToggleBtn.classList.add('open');
-            placeholder.replaceWith(contentToggleBtn); // Replace placeholder with the real button
+            titleDiv.appendChild(contentToggleBtn);
+        } else {
+            const placeholder = document.createElement('span');
+            placeholder.className = 'button-placeholder';
+            titleDiv.appendChild(placeholder);
         }
 
         const titleText = document.createElement('span');
@@ -95,34 +97,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         item.appendChild(titleDiv);
 
-        // --- Build Content Div (only if there's content or children) ---
+        // --- Build Content Div ---
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'accordion-content';
+        if (!isAccordionOpen) {
+            contentDiv.classList.add('hidden');
+        }
+
+        if (hasContent) {
+            const contentArea = document.createElement('div');
+            contentArea.className = 'content-area';
+            const contentParagraph = document.createElement('p');
+            contentParagraph.textContent = node.content;
+            if (!isContentVisible) {
+                contentParagraph.classList.add('hidden');
+            }
+            contentArea.appendChild(contentParagraph);
+            contentDiv.appendChild(contentArea);
+        }
+
+        if (hasChildren) {
+            const nestedContainer = document.createElement('div');
+            nestedContainer.className = 'nested-accordion';
+            node.children.forEach(childNode => {
+                nestedContainer.appendChild(createNodeElement(childNode));
+            });
+            contentDiv.appendChild(nestedContainer);
+        }
+
+        // Only append contentDiv if it's not empty
         if (hasContent || hasChildren) {
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'accordion-content';
-            if (!isAccordionOpen) {
-                contentDiv.classList.add('hidden');
-            }
-
-            if (hasContent) {
-                const contentArea = document.createElement('div');
-                contentArea.className = 'content-area';
-                const contentParagraph = document.createElement('p');
-                contentParagraph.textContent = node.content;
-                if (!isContentVisible) {
-                    contentParagraph.classList.add('hidden');
-                }
-                contentArea.appendChild(contentParagraph);
-                contentDiv.appendChild(contentArea);
-            }
-
-            if (hasChildren) {
-                const nestedContainer = document.createElement('div');
-                nestedContainer.className = 'nested-accordion';
-                node.children.forEach(childNode => {
-                    nestedContainer.appendChild(createNodeElement(childNode));
-                });
-                contentDiv.appendChild(nestedContainer);
-            }
             item.appendChild(contentDiv);
         }
 
@@ -396,8 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Toggle visibility of the content paragraph
             const node = findNodeById(state.nodes, id);
             if (node) node.contentVisible = !node.contentVisible;
-        } else if (e.target.matches('.accordion-toggle-btn')) {
-            alert(`DEBUG: Toggle button clicked for node ID: ${id}`);
+        } else if (e.target.closest('.accordion-title')) {
             // Toggle the accordion open/closed (for children)
             const node = findNodeById(state.nodes, id);
             if (node && node.children && node.children.length > 0) {
