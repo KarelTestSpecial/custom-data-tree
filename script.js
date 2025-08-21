@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editTitleBtn = document.getElementById('edit-title-btn');
     const editContentBtn = document.getElementById('edit-content-btn');
     const deleteNodeBtn = document.getElementById('delete-node-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const importFile = document.getElementById('import-file');
 
     // --- STATE MANAGEMENT ---
     let state = {
@@ -59,10 +61,28 @@ document.addEventListener('DOMContentLoaded', () => {
         item.className = `accordion-item ${isSelected ? 'selected' : ''}`;
         item.dataset.id = node.id;
 
+        // --- Build Title Div ---
         const titleDiv = document.createElement('div');
         titleDiv.className = 'accordion-title';
-        titleDiv.innerHTML = `<span class="title-text">${node.title}</span><span class="accordion-toggle-btn">${isAccordionOpen ? '-' : '+'}</span>`;
 
+        const contentToggleBtn = document.createElement('button');
+        contentToggleBtn.className = 'content-toggle-btn';
+        contentToggleBtn.textContent = '>';
+        if (isContentVisible) contentToggleBtn.classList.add('open');
+
+        const titleText = document.createElement('span');
+        titleText.className = 'title-text';
+        titleText.textContent = node.title;
+
+        const accordionToggleBtn = document.createElement('span');
+        accordionToggleBtn.className = 'accordion-toggle-btn';
+        accordionToggleBtn.textContent = isAccordionOpen ? '-' : '+';
+
+        titleDiv.appendChild(contentToggleBtn);
+        titleDiv.appendChild(titleText);
+        titleDiv.appendChild(accordionToggleBtn);
+
+        // --- Build Content Div ---
         const contentDiv = document.createElement('div');
         contentDiv.className = 'accordion-content';
         if (!isAccordionOpen) contentDiv.classList.add('hidden');
@@ -71,16 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
         contentArea.className = 'content-area';
 
         const contentParagraph = document.createElement('p');
-        contentParagraph.textContent = node.content; // Use content from state
+        contentParagraph.textContent = node.content;
         if (!isContentVisible) contentParagraph.classList.add('hidden');
 
-        const contentToggleBtn = document.createElement('button');
-        contentToggleBtn.className = 'content-toggle-btn';
-        contentToggleBtn.textContent = '>';
-        if (isContentVisible) contentToggleBtn.classList.add('open');
-
-        contentArea.appendChild(contentToggleBtn);
-        contentArea.appendChild(contentParagraph);
+        contentArea.appendChild(contentParagraph); // No button here anymore
 
         const nestedContainer = document.createElement('div');
         nestedContainer.className = 'nested-accordion';
@@ -104,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isNodeSelected = state.selectedNodeId !== null;
         addChildBtn.disabled = !isNodeSelected;
         editTitleBtn.disabled = !isNodeSelected;
-        editContentBtn.disabled = !isNodeSelected; // Update new button
+        editContentBtn.disabled = !isNodeSelected;
         deleteNodeBtn.disabled = !isNodeSelected;
     }
 
@@ -136,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title: title,
                 children: [],
                 contentVisible: false,
-                content: `Inhoud van ${title}.` // Default content
+                content: `Inhoud van ${title}.`
             };
             state.nodes.push(newNode);
             saveState();
@@ -184,12 +198,56 @@ document.addEventListener('DOMContentLoaded', () => {
         const node = findNodeById(state.nodes, state.selectedNodeId);
         if (node) {
             const newContent = prompt("Voer de nieuwe inhoud in:", node.content);
-            if (newContent !== null) { // Allow empty content
+            if (newContent !== null) {
                 node.content = newContent;
                 saveState();
                 render();
             }
         }
+    });
+
+    exportBtn.addEventListener('click', () => {
+        const stateString = JSON.stringify(state, null, 2); // Pretty print JSON
+        const blob = new Blob([stateString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'accordion-data.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+
+    importFile.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedState = JSON.parse(e.target.result);
+                // Basic validation
+                if (importedState && Array.isArray(importedState.nodes) && importedState.openNodes) {
+                    // Convert openNodes back to a Set
+                    importedState.openNodes = new Set(importedState.openNodes);
+                    state = importedState;
+                    saveState();
+                    render();
+                    alert('Data succesvol geïmporteerd!');
+                } else {
+                    throw new Error('Ongeldig bestandsformaat.');
+                }
+            } catch (error) {
+                alert(`Fout bij het importeren van het bestand: ${error.message}`);
+            }
+        };
+        reader.readAsText(file);
+
+        // Reset file input so the same file can be loaded again
+        event.target.value = '';
     });
 
     deleteNodeBtn.addEventListener('click', () => {
