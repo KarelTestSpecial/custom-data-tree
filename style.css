@@ -75,7 +75,7 @@ body {
 }
 
 .title-text {
-    flex-grow: 1; /* Allow the title to take up remaining space */
+    /* flex-grow: 1; */ /* Removed to make the clickable area smaller */
     cursor: pointer;
 }
 
