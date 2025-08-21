@@ -96,6 +96,7 @@ body {
     font-size: 20px;
     cursor: pointer;
     user-select: none;
+    margin-left: auto; /* Push the button to the far right */
 }
 
 .nested-accordion {
