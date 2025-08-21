@@ -124,6 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function parseTxtToNodes(text) {
+        // Handle potential Byte Order Mark (BOM) at the start of the file
+        if (text.charCodeAt(0) === 0xFEFF) {
+            text = text.slice(1);
+        }
+
         // Normalize line endings and filter out empty or whitespace-only lines
         const lines = text.replace(/\r\n/g, '\n').split('\n').filter(line => line.trim() !== '');
         if (lines.length === 0) return [];
