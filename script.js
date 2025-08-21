@@ -101,8 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Build Content Div ---
         const contentDiv = document.createElement('div');
         contentDiv.className = 'accordion-content';
-        // Content area is hidden if accordion is closed OR if there's no content to show
-        if (!isAccordionOpen || !hasContent) {
+        // Content area should only be hidden if the accordion itself is closed
+        if (!isAccordionOpen) {
             contentDiv.classList.add('hidden');
         }
 
@@ -397,12 +397,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.open(url, '_blank');
             }
             // A render is still needed to show the new selection
-        } else if (e.target.closest('.content-toggle-btn')) {
+        } else if (e.target.matches('.content-toggle-btn')) {
             // Toggle visibility of the content paragraph
             const node = findNodeById(state.nodes, id);
             if (node) node.contentVisible = !node.contentVisible;
-        } else if (e.target.closest('.accordion-title')) {
-            // Toggle the accordion open/closed (for children), only if it has children
+        } else if (e.target.matches('.accordion-toggle-btn')) {
+            // Toggle the accordion open/closed (for children)
             const node = findNodeById(state.nodes, id);
             if (node && node.children && node.children.length > 0) {
                 if (state.openNodes.has(id)) {
