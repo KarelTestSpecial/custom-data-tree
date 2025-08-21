@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteNodeBtn = document.getElementById('delete-node-btn');
     const exportBtn = document.getElementById('export-btn');
     const importFile = document.getElementById('import-file');
+    const importTxtFile = document.getElementById('import-txt-file');
 
     // --- STATE MANAGEMENT ---
     let state = {
@@ -120,6 +121,53 @@ document.addEventListener('DOMContentLoaded', () => {
         editTitleBtn.disabled = !isNodeSelected;
         editContentBtn.disabled = !isNodeSelected;
         deleteNodeBtn.disabled = !isNodeSelected;
+    }
+
+    function parseTxtToNodes(text) {
+        // Normalize line endings and filter out empty or whitespace-only lines
+        const lines = text.replace(/\r\n/g, '\n').split('\n').filter(line => line.trim() !== '');
+        if (lines.length === 0) return [];
+
+        const getIndentLevel = (line) => {
+            // Use a regex to count leading spaces. This is more robust than checking characters.
+            const match = line.match(/^( |\t)*/);
+            // Let's assume a tab is 4 spaces for consistency, though the source file uses spaces.
+            return match ? match[0].replace(/\t/g, '    ').length : 0;
+        };
+
+        const rootNodes = [];
+        const parentStack = []; // A stack to keep track of parent nodes at each level
+
+        lines.forEach(line => {
+            const indentLevel = getIndentLevel(line);
+            const title = line.trim();
+            const newNode = {
+                id: state.nextId++,
+                title: title,
+                children: [],
+                content: `Inhoud voor ${title}.`,
+                contentVisible: false
+            };
+
+            // Pop from the stack until we find the correct parent for the current indent level
+            while (parentStack.length > 0 && indentLevel <= parentStack[parentStack.length - 1].indent) {
+                parentStack.pop();
+            }
+
+            if (parentStack.length === 0) {
+                // This is a root node
+                rootNodes.push(newNode);
+            } else {
+                // This is a child node
+                const parent = parentStack[parentStack.length - 1].node;
+                parent.children.push(newNode);
+            }
+
+            // Push the current node onto the stack to act as a potential parent for subsequent nodes
+            parentStack.push({ node: newNode, indent: indentLevel });
+        });
+
+        return rootNodes;
     }
 
     function findNodeById(nodes, id) {
@@ -248,6 +296,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Reset file input so the same file can be loaded again
         event.target.value = '';
+    });
+
+    importTxtFile.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const textContent = e.target.result;
+                const newNodes = parseTxtToNodes(textContent);
+                if (newNodes.length > 0) {
+                    state.nodes = newNodes;
+                    state.openNodes.clear(); // Clear open nodes as the structure is new
+                    state.selectedNodeId = null; // Deselect any node
+                    saveState();
+                    render();
+                    alert('TXT-bestand succesvol geïmporteerd!');
+                } else {
+                    throw new Error('Kon geen nodes uit het bestand parsen.');
+                }
+            } catch (error) {
+                alert(`Fout bij het importeren van het TXT-bestand: ${error.message}`);
+            }
+        };
+        reader.readAsText(file);
+
+        event.target.value = ''; // Reset file input
     });
 
     deleteNodeBtn.addEventListener('click', () => {
