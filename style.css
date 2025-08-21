@@ -100,13 +100,14 @@ body {
 }
 
 .nested-accordion {
-    padding-left: 20px;
+    padding-left: 33px;
 }
 
 .content-area {
     display: flex;
     align-items: flex-start;
-    padding-bottom: 40px;
+    padding-bottom: 10px;
+    padding-left: 33px;
 }
 
 .content-toggle-btn {
@@ -137,5 +138,5 @@ body {
 }
 
 .content-area p {
-    margin: 1;
+    margin: 0;
 }
