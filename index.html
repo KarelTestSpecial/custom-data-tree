@@ -35,5 +35,9 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Cache-busting: Add a timestamp to the script URL to force reload
+        document.querySelector('script[src="script.js"]').src = `script.js?v=${new Date().getTime()}`;
+    </script>
 </body>
 </html>
