@@ -55,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createNodeElement(node) {
         const isSelected = node.id === state.selectedNodeId;
+        const hasChildren = node.children && node.children.length > 0;
+        const hasContent = node.content && node.content.trim() !== '';
         const isAccordionOpen = state.openNodes.has(node.id);
         const isContentVisible = node.contentVisible === true;
 
@@ -65,51 +67,68 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- Build Title Div ---
         const titleDiv = document.createElement('div');
         titleDiv.className = 'accordion-title';
+        if (!hasChildren) {
+            titleDiv.classList.add('no-children');
+        }
 
-        const contentToggleBtn = document.createElement('button');
-        contentToggleBtn.className = 'content-toggle-btn';
-        contentToggleBtn.textContent = '>';
-        if (isContentVisible) contentToggleBtn.classList.add('open');
+        if (hasContent) {
+            const contentToggleBtn = document.createElement('button');
+            contentToggleBtn.className = 'content-toggle-btn';
+            contentToggleBtn.textContent = '>';
+            if (isContentVisible) contentToggleBtn.classList.add('open');
+            titleDiv.appendChild(contentToggleBtn);
+        } else {
+            const placeholder = document.createElement('span');
+            placeholder.className = 'button-placeholder';
+            titleDiv.appendChild(placeholder);
+        }
 
         const titleText = document.createElement('span');
         titleText.className = 'title-text';
         titleText.textContent = node.title;
-
-        const accordionToggleBtn = document.createElement('span');
-        accordionToggleBtn.className = 'accordion-toggle-btn';
-        accordionToggleBtn.textContent = isAccordionOpen ? '-' : '+';
-
-        titleDiv.appendChild(contentToggleBtn);
         titleDiv.appendChild(titleText);
-        titleDiv.appendChild(accordionToggleBtn);
+
+        if (hasChildren) {
+            const accordionToggleBtn = document.createElement('span');
+            accordionToggleBtn.className = 'accordion-toggle-btn';
+            accordionToggleBtn.textContent = isAccordionOpen ? '-' : '+';
+            titleDiv.appendChild(accordionToggleBtn);
+        }
+
+        item.appendChild(titleDiv);
 
         // --- Build Content Div ---
         const contentDiv = document.createElement('div');
         contentDiv.className = 'accordion-content';
-        if (!isAccordionOpen) contentDiv.classList.add('hidden');
+        if (!isAccordionOpen) {
+            contentDiv.classList.add('hidden');
+        }
 
-        const contentArea = document.createElement('div');
-        contentArea.className = 'content-area';
+        if (hasContent) {
+            const contentArea = document.createElement('div');
+            contentArea.className = 'content-area';
+            const contentParagraph = document.createElement('p');
+            contentParagraph.textContent = node.content;
+            if (!isContentVisible) {
+                contentParagraph.classList.add('hidden');
+            }
+            contentArea.appendChild(contentParagraph);
+            contentDiv.appendChild(contentArea);
+        }
 
-        const contentParagraph = document.createElement('p');
-        contentParagraph.textContent = node.content;
-        if (!isContentVisible) contentParagraph.classList.add('hidden');
-
-        contentArea.appendChild(contentParagraph); // No button here anymore
-
-        const nestedContainer = document.createElement('div');
-        nestedContainer.className = 'nested-accordion';
-
-        if (node.children && node.children.length > 0) {
+        if (hasChildren) {
+            const nestedContainer = document.createElement('div');
+            nestedContainer.className = 'nested-accordion';
             node.children.forEach(childNode => {
                 nestedContainer.appendChild(createNodeElement(childNode));
             });
+            contentDiv.appendChild(nestedContainer);
         }
 
-        contentDiv.appendChild(contentArea);
-        contentDiv.appendChild(nestedContainer);
-        item.appendChild(titleDiv);
-        item.appendChild(contentDiv);
+        // Only append contentDiv if it's not empty
+        if (hasContent || hasChildren) {
+            item.appendChild(contentDiv);
+        }
 
         return item;
     }
@@ -150,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 id: state.nextId++,
                 title: title,
                 children: [],
-                content: `Inhoud voor ${title}.`,
+                content: '', // Start with empty content, as requested
                 contentVisible: false
             };
 
@@ -181,6 +200,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (node.children) {
                 const found = findNodeById(node.children, id);
                 if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function findNodeAndPathById(nodes, id, path = []) {
+        for (const node of nodes) {
+            const newPath = [...path, node];
+            if (node.id === id) {
+                return { node: node, path: newPath };
+            }
+            if (node.children) {
+                const found = findNodeAndPathById(node.children, id, newPath);
+                if (found) {
+                    return found;
+                }
             }
         }
         return null;
@@ -351,15 +386,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = parseInt(itemElement.dataset.id, 10);
         state.selectedNodeId = id;
 
-        if (e.target.closest('.content-toggle-btn')) {
+        // Handle different click targets within the accordion item
+        if (e.target.matches('.title-text')) {
+            // New feature: Click title to Google search the breadcrumb trail
+            const result = findNodeAndPathById(state.nodes, id);
+            if (result) {
+                const searchQuery = result.path.map(n => n.title).join(' ');
+                const url = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+                window.open(url, '_blank');
+            }
+            // A render is still needed to show the new selection
+        } else if (e.target.matches('.content-toggle-btn')) {
+            // Toggle visibility of the content paragraph
             const node = findNodeById(state.nodes, id);
             if (node) node.contentVisible = !node.contentVisible;
-        }
-        else if (e.target.closest('.accordion-title')) {
-            if (state.openNodes.has(id)) {
-                state.openNodes.delete(id);
-            } else {
-                state.openNodes.add(id);
+        } else if (e.target.closest('.accordion-title')) {
+            // Toggle the accordion open/closed (for children)
+            const node = findNodeById(state.nodes, id);
+            if (node && node.children && node.children.length > 0) {
+                if (state.openNodes.has(id)) {
+                    state.openNodes.delete(id);
+                } else {
+                    state.openNodes.add(id);
+                }
             }
         }
 

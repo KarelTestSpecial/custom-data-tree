@@ -75,7 +75,12 @@ body {
 }
 
 .title-text {
-    flex-grow: 1; /* Allow the title to take up remaining space */
+    /* flex-grow: 1; */ /* Removed to make the clickable area smaller */
+    cursor: pointer;
+}
+
+.title-text:hover {
+    text-decoration: underline;
 }
 
 .accordion-content {
@@ -91,16 +96,18 @@ body {
     font-size: 20px;
     cursor: pointer;
     user-select: none;
+    margin-left: auto; /* Push the button to the far right */
 }
 
 .nested-accordion {
-    padding-left: 20px;
+    padding-left: 32px;
 }
 
 .content-area {
     display: flex;
     align-items: flex-start;
-    padding: 25px
+    padding-bottom: 12px;
+    padding-left: 32px;
 }
 
 .content-toggle-btn {
@@ -116,6 +123,18 @@ body {
 
 .content-toggle-btn.open {
     transform: rotate(90deg);
+}
+
+.accordion-title.no-children {
+    cursor: default;
+}
+
+/* Style for the placeholder to match the content-toggle-btn's space */
+.button-placeholder {
+    display: inline-block;
+    width: 25px; /* Approximate width of the button */
+    height: 25px; /* Approximate height of the button */
+    margin-right: 5px;
 }
 
 .content-area p {

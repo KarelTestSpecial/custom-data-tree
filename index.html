@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <script>
+        // Cache-busting for CSS
+        document.querySelector('link[href="style.css"]').href = `style.css?v=${new Date().getTime()}`;
+    </script>
 
     <div id="app-container">
         <div id="controls-container">
@@ -35,5 +39,9 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Cache-busting: Add a timestamp to the script URL to force reload
+        document.querySelector('script[src="script.js"]').src = `script.js?v=${new Date().getTime()}`;
+    </script>
 </body>
 </html>
